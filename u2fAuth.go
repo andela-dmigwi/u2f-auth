@@ -5,15 +5,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"reflect"
-
-	"github.com/tstranex/u2f"
+	"time"
 )
 
-var challenge *u2f.Challenge
-
-var registrations []u2f.Registration
-var counter uint32
+const defaultUrl string = "http://api2.yubico.com/wsapi/2.0/verify?id=1&otp="
 
 func login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method:", r.Method) //get request method
@@ -23,57 +18,32 @@ func login(w http.ResponseWriter, r *http.Request) {
 	} else {
 		r.ParseForm()
 		// logic part of log in
-		fmt.Println("username:", reflect.TypeOf(r.Form["username"]))
-		fmt.Printf("password: %s", r.Form["password"][0])
-
-		app_id := "http://localhost:5000"
-
-		// Send registration request to the browser.
-		c, _ := u2f.NewChallenge(app_id, []string{app_id})
-		req := u2f.NewWebRegisterRequest(c, registrations)
-
-		log.Printf("New data : %v", req)
-
-		// Read response from the browser.
-		// var resp RegisterResponse
-		// reg, err := Register(resp, c, nil)
-		// if err != nil {
-		// 	// Registration failed.
-		// }
-		// newReq := getRequest()
-		// json.NewEncoder(w).Encode(newReq)
-
-		// // Read response from the browser.
-		// var resp RegisterResponse
-		// challenge, err := Register(resp, c, nil)
-		// log.Printf("The challenge is : %v", challenge)
-		// if err != nil {
-		// 	fmt.Println("Registration failed.")
-		// }
-		// temp, _ := template.ParseFiles("template/u2fAuth.html")
-		// temp.Execute(w, challenge)
+		username := r.Form["email"][0]
+		password := r.Form["password"][0]
+		key := r.Form["key"][0]
+		log.Printf("username: %s password: %s Key :%s", username, password, key)
 	}
 }
 
-func getRequest() *u2f.WebRegisterRequest {
-	appId := "http://localhost:5000"
-	// Send registration request to the browser.
-	c, _ := u2f.NewChallenge(appId, []string{appId})
-	challenge = c
-	req := u2f.NewWebRegisterRequest(c, registrations)
-	fmt.Printf("\n Type :%v", reflect.TypeOf(req))
-	fmt.Printf("\n ACtual challenge :%v", req)
-	return req
+func authenticateOTP(key string) {
+	client := &http.Client{Timeout: time.Second * 10}
+	params := fmt.Sprintf("%s&nonce=aef3a7835277a28da83", key)
+	fullUrl := fmt.Sprintf("s%s%", defaultUrl, params)
+	req, err := http.NewRequest("GET", fullUrl, nil)
+	if err != nil {
+		fmt.Printf("Error Occurred : %s\n", err)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Error Occurred : %s\n", err)
+	}
+	log.Printf("server reponse ::: %v", resp)
 }
-
-// func getRequest(w http.ResponseWriter. r *http.Request){
-
-// }
 
 func main() {
 	http.HandleFunc("/", login)              // set router
 	err := http.ListenAndServe(":5000", nil) // set listen port
-	fmt.Println("server running on port 5000")
+	log.Println("server running on port 5000")
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
