@@ -6,7 +6,14 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+
+	"github.com/tstranex/u2f"
 )
+
+var challenge *u2f.Challenge
+
+var registrations []u2f.Registration
+var counter uint32
 
 func login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method:", r.Method) //get request method
@@ -21,7 +28,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		appId := "http://localhost"
 
 		// Send registration request to the browser.
-		c, _ := NewChallenge(appId, []string{appId})
+		c, _ := u2f.NewChallenge(appId, []string{appId})
 		req, _ := c.RegisterRequest()
 
 		// Read response from the browser.
