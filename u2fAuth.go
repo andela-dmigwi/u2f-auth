@@ -25,22 +25,50 @@ func login(w http.ResponseWriter, r *http.Request) {
 		// logic part of log in
 		fmt.Println("username:", reflect.TypeOf(r.Form["username"]))
 		fmt.Printf("password: %s", r.Form["password"][0])
-		appId := "http://localhost"
+
+		app_id := "http://localhost:5000"
 
 		// Send registration request to the browser.
-		c, _ := u2f.NewChallenge(appId, []string{appId})
-		req, _ := c.RegisterRequest()
+		c, _ := u2f.NewChallenge(app_id, []string{app_id})
+		req := u2f.NewWebRegisterRequest(c, registrations)
+
+		log.Printf("New data : %v", req)
 
 		// Read response from the browser.
-		var resp RegisterResponse
-		challenge, err := Register(resp, c, nil)
-		if err != nil {
-			fmt.Println("Registration failed.")
-		}
-		temp, _ := template.ParseFiles("template/u2fAuth.html")
-		temp.Execute(w, challenge)
+		// var resp RegisterResponse
+		// reg, err := Register(resp, c, nil)
+		// if err != nil {
+		// 	// Registration failed.
+		// }
+		// newReq := getRequest()
+		// json.NewEncoder(w).Encode(newReq)
+
+		// // Read response from the browser.
+		// var resp RegisterResponse
+		// challenge, err := Register(resp, c, nil)
+		// log.Printf("The challenge is : %v", challenge)
+		// if err != nil {
+		// 	fmt.Println("Registration failed.")
+		// }
+		// temp, _ := template.ParseFiles("template/u2fAuth.html")
+		// temp.Execute(w, challenge)
 	}
 }
+
+func getRequest() *u2f.WebRegisterRequest {
+	appId := "http://localhost:5000"
+	// Send registration request to the browser.
+	c, _ := u2f.NewChallenge(appId, []string{appId})
+	challenge = c
+	req := u2f.NewWebRegisterRequest(c, registrations)
+	fmt.Printf("\n Type :%v", reflect.TypeOf(req))
+	fmt.Printf("\n ACtual challenge :%v", req)
+	return req
+}
+
+// func getRequest(w http.ResponseWriter. r *http.Request){
+
+// }
 
 func main() {
 	http.HandleFunc("/", login)              // set router

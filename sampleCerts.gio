@@ -1,4 +1,4 @@
-package main
+package rest
 
 const tlsCert = `-----BEGIN CERTIFICATE-----
 MIIDBTCCAe2gAwIBAgIJAOkg5B4SWLv4MA0GCSqGSIb3DQEBBQUAMBkxFzAVBgNV
